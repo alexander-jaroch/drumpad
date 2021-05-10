@@ -47,6 +47,50 @@ var Drumpad;
 })(Drumpad || (Drumpad = {}));
 var Drumpad;
 (function (Drumpad) {
+    class KeyAssignment {
+        constructor(key, callback) {
+            this._key = key;
+            this._triggered = false;
+            this._callback = callback;
+        }
+        trigger(key) {
+            if (this._key === key && !this._triggered) {
+                this._callback();
+                this._triggered = true;
+            }
+        }
+        reset(key) {
+            if (this._key === key) {
+                this._triggered = false;
+            }
+        }
+    }
+    Drumpad.KeyAssignment = KeyAssignment;
+})(Drumpad || (Drumpad = {}));
+var Drumpad;
+(function (Drumpad) {
+    class KeyboardLayout {
+        constructor() {
+            this._assignments = [];
+        }
+        add(key, note) {
+            this._assignments.push(new Drumpad.KeyAssignment(key, () => { note.play(); }));
+        }
+        trigger(event) {
+            for (const assignment of this._assignments) {
+                assignment.trigger(event.key);
+            }
+        }
+        reset(event) {
+            for (const assignment of this._assignments) {
+                assignment.reset(event.key);
+            }
+        }
+    }
+    Drumpad.KeyboardLayout = KeyboardLayout;
+})(Drumpad || (Drumpad = {}));
+var Drumpad;
+(function (Drumpad) {
     class Note {
         constructor(pitch, duration) {
             this._pitch = pitch;
@@ -87,47 +131,7 @@ var Drumpad;
 })(Drumpad || (Drumpad = {}));
 var Drumpad;
 (function (Drumpad) {
-    class SinglePressKeyAssignment {
-        constructor(key, callback) {
-            this._key = key;
-            this._triggered = false;
-            this._callback = callback;
-        }
-        runCallback(key) {
-            if (this._key === key && !this._triggered) {
-                this._callback();
-                this._triggered = true;
-            }
-        }
-        setDefault(key) {
-            if (this._key === key) {
-                this._triggered = false;
-            }
-        }
-    }
-    Drumpad.SinglePressKeyAssignment = SinglePressKeyAssignment;
-})(Drumpad || (Drumpad = {}));
-var Drumpad;
-(function (Drumpad) {
-    class KeyboardLayout {
-        constructor() {
-            this._assignments = [];
-        }
-        add(key, note) {
-            this._assignments.push(new Drumpad.SinglePressKeyAssignment(key, () => { note.play(); }));
-        }
-        playNote(event) {
-            for (const assignment of this._assignments) {
-                assignment.runCallback(event.key);
-            }
-        }
-        resetNote(event) {
-            for (const assignment of this._assignments) {
-                assignment.setDefault(event.key);
-            }
-        }
-    }
-    const keyboardLayout = new KeyboardLayout();
+    const keyboardLayout = new Drumpad.KeyboardLayout();
     keyboardLayout.add("a", (new Drumpad.Note(Drumpad.Pitch.C, Drumpad.Duration.Full)));
     keyboardLayout.add("s", (new Drumpad.Note(Drumpad.Pitch.D, Drumpad.Duration.Full)));
     keyboardLayout.add("d", (new Drumpad.Note(Drumpad.Pitch.E, Drumpad.Duration.Full)));
@@ -135,7 +139,7 @@ var Drumpad;
     keyboardLayout.add("g", (new Drumpad.Note(Drumpad.Pitch.G, Drumpad.Duration.Full)));
     keyboardLayout.add("h", (new Drumpad.Note(Drumpad.Pitch.A, Drumpad.Duration.Full)));
     keyboardLayout.add("j", (new Drumpad.Note(Drumpad.Pitch.B, Drumpad.Duration.Full)));
-    Drumpad.Document.event("keydown", event => { keyboardLayout.playNote(event); });
-    Drumpad.Document.event("keyup", event => { keyboardLayout.resetNote(event); });
+    Drumpad.Document.event("keydown", event => { keyboardLayout.trigger(event); });
+    Drumpad.Document.event("keyup", event => { keyboardLayout.reset(event); });
 })(Drumpad || (Drumpad = {}));
 //# sourceMappingURL=core.js.map

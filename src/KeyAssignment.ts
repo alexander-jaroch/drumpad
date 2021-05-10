@@ -1,5 +1,5 @@
 namespace Drumpad {
-    export class SinglePressKeyAssignment {
+    export class KeyAssignment {
         private _key: string;
         private _triggered: boolean;
         private _callback: Function;
@@ -10,14 +10,14 @@ namespace Drumpad {
             this._callback = callback;
         }
 
-        public runCallback(key: string): void {
+        public trigger(key: string): void {
             if (this._key === key && !this._triggered) {
                 this._callback();
                 this._triggered = true;
             }
         }
 
-        public setDefault(key: string): void {
+        public reset(key: string): void {
             if (this._key === key) {
                 this._triggered = false;
             }
